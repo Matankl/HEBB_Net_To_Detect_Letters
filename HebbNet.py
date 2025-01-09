@@ -1,0 +1,174 @@
+import numpy as np
+
+DEBUG = False
+
+# Hebb Net Model Class
+class HebbNet:
+    def __init__(self):
+        """
+        Initialize the Hebb Network.
+        """
+        self.weights = np.zeros((3, 64))  # 3 outputs, 64 input features
+
+    # Hebbian learning rule
+    # https://www.youtube.com/watch?v=zpmdFzMAl8Y this is a great video about hebb rule
+    def train_hebbian(self, data):
+        for input_vector, output_vector in data:
+            input_vector = np.array(input_vector)
+            output_vector = np.array(output_vector)
+
+            # print("weights before")
+            # print(self.weights)
+            # print("weights after")
+
+            # Update rule (if numpy is not allowed there is a method below)
+            self.weights += np.outer(output_vector, input_vector)
+            # print(self.weights)
+
+    # Predict the output using the trained model
+    def predict(self, input_vector):
+        input_vector = np.array(input_vector)
+        output = np.dot(self.weights, input_vector)  # Weighted sum
+        # now make the largest value out of the 3 to be 1 and the rest 0
+        max_value = max(output)
+        # Normalize the output to 0 and 1 based on the maximum value
+        for i in range(len(output)):
+            if output[i] == max_value:
+                output[i] = int(1)
+            else:
+                output[i] = int(0)
+        output = [int(x) for x in output]
+        return output
+
+
+def calculate_accuracy(predictions, ground_truths):
+    """
+    Calculate accuracy for binary predictions.
+
+    Args:
+        predictions (list of lists): List of predicted binary outputs (e.g., [[0, 1, 0], [1, 0, 0]]).
+        ground_truths (list of lists): List of ground truth binary outputs.
+
+    Returns:
+        float: Accuracy as a percentage.
+    """
+    correct = 0
+    total = len(predictions)
+
+    for pred, truth in zip(predictions, ground_truths):
+        if pred == truth:
+            correct += 1
+
+    accuracy = (correct / total) * 100
+    return accuracy
+
+
+def calculate_f1(predictions, ground_truths):
+    """
+    Calculate F1 score for binary predictions.
+
+    Args:
+        predictions (list of lists): List of predicted binary outputs (e.g., [[0, 1, 0], [1, 0, 0]]).
+        ground_truths (list of lists): List of ground truth binary outputs.
+
+    Returns:
+        float: F1 score.
+    """
+    tp = 0  # True Positives
+    fp = 0  # False Positives
+    fn = 0  # False Negatives
+
+    for pred, truth in zip(predictions, ground_truths):
+        for i in range(len(pred)):
+            if pred[i] == 1 and truth[i] == 1:
+                tp += 1
+            elif pred[i] == 1 and truth[i] == 0:
+                fp += 1
+            elif pred[i] == 0 and truth[i] == 1:
+                fn += 1
+
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+    f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+
+    return f1_score
+
+
+def test_hebbian_network(letters, model_one_epoch, model_two_epoch, convert_imag_to_vector, get_output,
+                         calculate_accuracy, calculate_f1):
+    """
+    Tests two Hebbian models on a dataset and calculates their accuracy and F1 scores.
+
+    Args:
+        letters (dict): A dictionary mapping letters to their hex values.
+        model_one_epoch (object): The first trained Hebbian model (one epoch).
+        model_two_epoch (object): The second trained Hebbian model (two epochs).
+        convert_imag_to_vector (function): Function to convert image hex values to an input vector.
+        get_output (function): Function to get the expected binary output for a letter.
+        calculate_accuracy (function): Function to calculate accuracy.
+        calculate_f1 (function): Function to calculate F1 score.
+
+    Returns:
+        dict: A dictionary containing predictions, ground truths, and evaluation metrics.
+    """
+    predictions_one_epoch = []
+    predictions_two_epoch = []
+    ground_truths = []
+
+    print("Testing the Hebbian Network on the training set:")
+
+    # Loop through letters and test predictions
+    for letter, hex_values in letters.items():
+        input_vector = convert_imag_to_vector(hex_values)
+        prediction_one_epoch = model_one_epoch.predict(input_vector)
+        prediction_two_epoch = model_two_epoch.predict(input_vector)
+        real = get_output(letter)
+
+        predictions_one_epoch.append(prediction_one_epoch)
+        predictions_two_epoch.append(prediction_two_epoch)
+        ground_truths.append(real)
+
+        if DEBUG:
+            print(f"Letter: {letter}, Predicted Output (One Epoch): {prediction_one_epoch}, Expected Output: {real}")
+            print(f"Letter: {letter}, Predicted Output (Two Epochs): {prediction_two_epoch}, Expected Output: {real}")
+            print(" ")
+
+    # Calculate metrics
+    accuracy_one_epoch = calculate_accuracy(predictions_one_epoch, ground_truths)
+    f1_score_one_epoch = calculate_f1(predictions_one_epoch, ground_truths)
+
+    accuracy_two_epoch = calculate_accuracy(predictions_two_epoch, ground_truths)
+    f1_score_two_epoch = calculate_f1(predictions_two_epoch, ground_truths)
+
+    # Print metrics
+    print(f"accuracy_one_epoch: {accuracy_one_epoch:.3f}%")
+    print(f"f1_score_one_epoch: {f1_score_one_epoch:.3f}")
+    print(f"accuracy_two_epoch: {accuracy_two_epoch:.3f}%")
+    print(f"f1_score_two_epoch: {f1_score_two_epoch:.3f}")
+
+
+
+# ____________________________________ private ____________________________________#
+
+def outer_product(vector_a, vector_b):
+    """
+    Compute the outer product of two vectors.
+
+    Args:
+        vector_a: List of numbers (1D vector).
+        vector_b: List of numbers (1D vector).
+
+    Returns:
+        A 2D list (matrix) representing the outer product.
+    """
+    # Initialize an empty matrix to store the results
+    result = []
+
+    # Iterate over each element in vector_a
+    for a in vector_a:
+        # For each element in vector_a, compute a row by multiplying with all elements in vector_b
+        row = [a * b for b in vector_b]
+        # Append the computed row to the result
+        result.append(row)
+
+    return result
