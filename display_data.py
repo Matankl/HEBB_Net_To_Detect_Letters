@@ -1,5 +1,8 @@
 from DataSet import *
 
+shifted_left = shift_pixels_data_augmentation(LETTERS, "left")
+shifted_right = shift_pixels_data_augmentation(LETTERS, "right")
+
 # Display all the data set
 for letter in LETTERS:
     # print matrix
@@ -29,12 +32,23 @@ for letter in LETTERS:
 
 print("")
 matrix = display_letter(LETTERS["A"])
-# print_matrix(matrix)
+matrix_right = display_letter(shifted_right["A"])
+matrix_left = display_letter(shifted_left["A"])
+
+print_matrix(matrix)
+print_matrix(matrix_right)
+print_matrix(matrix_left)
+
 # print vector
 vector = flatten_matrix(matrix)
 print_vector(vector)
 
-after_augmentation = data_augmentation(LETTERS, 0.05)
+
+
+
+
+
+after_augmentation = add_noise(LETTERS, 0.05)
 print("vector with 5% noise")
 matrix = display_letter(after_augmentation["A"])
 # print_matrix(matrix)
@@ -42,7 +56,7 @@ matrix = display_letter(after_augmentation["A"])
 vector = flatten_matrix(matrix)
 print_vector(vector)
 
-after_augmentation = data_augmentation(LETTERS, 0.10)
+after_augmentation = add_noise(LETTERS, 0.10)
 print("vector with 10% noise")
 matrix = display_letter(after_augmentation["A"])
 # print_matrix(matrix)
@@ -50,7 +64,7 @@ matrix = display_letter(after_augmentation["A"])
 vector = flatten_matrix(matrix)
 print_vector(vector)
 
-after_augmentation = data_augmentation(LETTERS, 0.20)
+after_augmentation = add_noise(LETTERS, 0.20)
 print("vector with 20% noise")
 matrix = display_letter(after_augmentation["A"])
 # print_matrix(matrix)

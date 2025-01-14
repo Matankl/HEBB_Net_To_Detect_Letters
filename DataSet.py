@@ -1,7 +1,7 @@
 # Hexadecimal representations of letters A-Z
 import random
-# random.seed(2021)
-random.seed(4225)
+random.seed(2021)
+# random.seed(4225)
 
 LETTERS = {
     "A": [0x0C, 0x1E, 0x33, 0x33, 0x3F, 0x33, 0x33, 0x00],
@@ -75,7 +75,7 @@ def get_output(letter):
         return [0, 0, 1]
 
 
-def data_augmentation(letters, chance):
+def add_noise(letters, chance):
     """
        Flips each bit in the binary representation of the LETTERS with a given chance.
 
@@ -104,4 +104,29 @@ def data_augmentation(letters, chance):
 
     return flipped_letters
 
+def shift_pixels_data_augmentation(letters, direction):
+    """
+    Shifts the pixels in the binary representation of the LETTERS one bit.
 
+    Args:
+        letters (dict): Dictionary where keys are letters and values are lists of byte values.
+        direction (str): Direction of the shift ("left" or "right").
+
+    Returns:
+        dict: A new dictionary with shifted pixels.
+    """
+    if direction not in {"left", "right"}:
+        raise ValueError("Direction must be either 'left' or 'right'.")
+
+    shifted_letters = {}
+    for letter, byte_list in letters.items():
+        shifted_byte_list = []
+        for byte in byte_list:
+            if direction == "left":
+                shifted_byte = (byte << 1) & 0xFF  # Shift left and mask to 8 bits
+            elif direction == "right":
+                shifted_byte = (byte >> 1)  # Shift right
+            shifted_byte_list.append(shifted_byte)
+        shifted_letters[letter] = shifted_byte_list
+
+    return shifted_letters
