@@ -20,7 +20,7 @@ class HebbNet:
             # outer takes each val from output_vector and multiply it with each val in input_vector and saves it in its oun cell
             # Update rule (if numpy is not allowed there is a method below)
             self.weights += np.outer(output_vector, input_vector)
-            # print(self.weights)
+        # print(self.weights)
 
     # Predict the output using the trained model
     def predict(self, input_vector):
