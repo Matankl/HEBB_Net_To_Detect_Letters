@@ -44,10 +44,6 @@ vector = flatten_matrix(matrix)
 print_vector(vector)
 
 
-
-
-
-
 after_augmentation = add_noise(LETTERS, 0.05)
 print("vector with 5% noise")
 matrix = display_letter(after_augmentation["A"])

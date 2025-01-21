@@ -17,10 +17,7 @@ class HebbNet:
             input_vector = np.array(input_vector)
             output_vector = np.array(output_vector)
 
-            # print("weights before")
-            # print(self.weights)
-            # print("weights after")
-
+            # outer takes each val from output_vector and multiply it with each val in input_vector and saves it in its oun cell
             # Update rule (if numpy is not allowed there is a method below)
             self.weights += np.outer(output_vector, input_vector)
             # print(self.weights)
@@ -147,6 +144,80 @@ def test_hebbian_network(letters, model_one_epoch, model_two_epoch, convert_imag
     print(f"f1_score_two_epoch: {f1_score_two_epoch:.3f}")
 
 
+def test_hebbian_networkX(letters, models, convert_imag_to_vector, get_output,
+                         calculate_accuracy, calculate_f1):
+    """
+    Tests multiple Hebbian models on a dataset and calculates their accuracy and F1 scores.
+
+    Args:
+        letters (dict): A dictionary mapping letters to their hex values.
+        models (list): A list of trained Hebbian models to test.
+        convert_imag_to_vector (function): Function to convert image hex values to an input vector.
+        get_output (function): Function to get the expected binary output for a letter.
+        calculate_accuracy (function): Function to calculate accuracy.
+        calculate_f1 (function): Function to calculate F1 score.
+
+    Returns:
+        dict: A dictionary with the following structure:
+            {
+                "predictions": [
+                    [model1_pred_letter1, model1_pred_letter2, ...],
+                    [model2_pred_letter1, model2_pred_letter2, ...],
+                    ...
+                ],
+                "ground_truths": [true_label_letter1, true_label_letter2, ...],
+                "metrics": {
+                    "Model_1": {"accuracy": ..., "f1_score": ...},
+                    "Model_2": {"accuracy": ..., "f1_score": ...},
+                    ...
+                }
+            }
+    """
+    # Initialize a list of prediction lists—one sub-list per model
+    all_predictions = [[] for _ in models]
+    ground_truths = []
+
+    print("Testing the Hebbian Network on the given dataset:")
+
+    # Generate predictions for each letter in the dataset
+    for letter, hex_values in letters.items():
+        input_vector = convert_imag_to_vector(hex_values)
+        real_output = get_output(letter)
+        ground_truths.append(real_output)
+
+        # Predict using each model
+        for i, model in enumerate(models):
+            prediction = model.predict(input_vector)
+            all_predictions[i].append(prediction)
+
+        # Debug print if needed
+        if DEBUG:
+            print(f"Letter: {letter}, Expected: {real_output}")
+            for i, prediction_list in enumerate(all_predictions):
+                # Just the last prediction in that list (the one we just added)
+                print(f"  Model {i+1} Predicted: {prediction_list[-1]}")
+            print(" ")
+
+    # Calculate and print metrics for each model
+    metrics = {}
+    for i, predictions in enumerate(all_predictions):
+        accuracy = calculate_accuracy(predictions, ground_truths)
+        f1_score = calculate_f1(predictions, ground_truths)
+
+        model_name = f"Model_{i+1}"
+        metrics[model_name] = {
+            "accuracy": accuracy,
+            "f1_score": f1_score
+        }
+
+        print(f"{model_name} -> Accuracy: {accuracy:.3f}% | F1 Score: {f1_score:.3f}")
+
+    # Return a detailed dictionary containing predictions, ground truths, and metrics
+    return {
+        "predictions": all_predictions,
+        "ground_truths": ground_truths,
+        "metrics": metrics
+    }
 
 # ____________________________________ private ____________________________________#
 
