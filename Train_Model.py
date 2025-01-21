@@ -24,6 +24,7 @@ for letter, hex_values in augmented_letters.items():
 
 
 
+
 # Init the Hebbian network
 print("Init the models")
 model_one_epoch = HebbNet()
